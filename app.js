@@ -1,5 +1,6 @@
 const express = require('express')
 const bodyParser = require('body-parser')
+const mongoose = require('mongoose')
 
 const app  = express();
 app.use(bodyParser.json())
@@ -14,4 +15,8 @@ app.use((req, res, next) => {
 const feedRoutes = require('./routes/feed')
 
 app.use('/feed', feedRoutes)
-app.listen(8080)
+
+mongoose.connect('mongodb+srv://abdullah:07707908625@nodejs-cyldb.gcp.mongodb.net/Blog',
+    { useNewUrlParser: true, useUnifiedTopology: true }).then( _ => {
+        app.listen(8080)
+    }).catch(err => console.log(err))
