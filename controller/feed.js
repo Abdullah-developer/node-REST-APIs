@@ -1,8 +1,8 @@
-const { validationResult } = require('express-validator')
-const Post = require('../model/post.js')
 const fs = require('fs')
 const path = require('path')
-const post = require('../model/post.js')
+
+const { validationResult } = require('express-validator')
+const Post = require('../model/post.js')
 
 const clearImage = filePath => {
     filePath = path.join(__dirname, '..', filePath)
@@ -10,16 +10,21 @@ const clearImage = filePath => {
 }
 
 exports.getPosts = (req, res, next) => {
-    Post.find()
-            .then(posts => {
-                res.status(200).json({ posts })
-            })
-            .catch(error => {
-                if (!error.statusCode) {
-                    error.statusCode = 500;
-                }
-                next(error)
-            })
+    const currentPage = req.query.page || 1
+    const perPage = 2 
+    let totalCount;
+    Post.find().countDocuments().then(document_count => {
+        totalCount = document_count;
+        return Post.find().skip((currentPage - 1) * perPage).limit(perPage)
+    }).then(posts => {
+            res.status(200).json({ posts, totalPost: `${2 * currentPage - 1} ${totalCount < 2 * currentPage ? "" : 2 * currentPage} From ${totalCount}`})
+        })
+        .catch(error => {
+            if (!error.statusCode) {
+                error.statusCode = 500;
+            }
+            next(error)
+        })
 }
 
 exports.getPost = (req, res, next) => {
@@ -125,14 +130,23 @@ exports.updatePost = (req, res, next) => {
 
 exports.deletePost = (req, res, next) => {
     const postId = req.params.postId;
-    Post.findByIdAndDelete(postId)
-    .then(result => {
-        console.log(result)
-        res.status(200).json({message: 'Post Deleted. !!!'})
-    }).catch(error =>  {
-        if (!error.statusCode) {
-            error.statusCode = 500
+    console.log(postId)
+    Post.findById(postId).then(post => {
+        console.log(post)
+        if (!post) {
+            const error = new Error('There is no post with this id');
+            error.statusCode = 422;
+            throw error;
         }
-        next(error)
-    })
+        clearImage(post.image)
+        return Post.findByIdAndRemove(postId)
+        }).then(result => {
+            console.log(result)
+            res.status(200).json({message: 'Post Deleted !!!'})
+        }).catch(error =>  {
+            if (!error.statusCode) {
+                error.statusCode = 500
+            }
+            next(error)
+        })
 }
