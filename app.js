@@ -2,11 +2,32 @@ const express = require('express')
 const bodyParser = require('body-parser')
 const path = require('path')
 const mongoose = require('mongoose')
+const multer = require('multer')
+const { v4: uuidv4 } = require('uuid');
 
 const app  = express();
 
+const fileStorage = multer.diskStorage({
+    destination: function(req, file, callback) {
+        callback(null, 'images');
+    },
+    filename: function(req, file, callback) {
+        callback(null, uuidv4())
+    }
+});
+
+const fileFilter = (req, file, callback) => {
+    if (file.mimetype === 'image/png' || file.mimetype === 'image/jpg' || file.mimetype === 'image/jpeg') {
+        callback(null, true)
+    } else {
+        callback(null, false)
+    }
+}
+
+
 app.use(bodyParser.json())
 app.use('/images', express.static(path.join(__dirname, 'images')))
+app.use(multer({storage: fileStorage, fileFilter: fileFilter}).single('image'))
 
 app.use((req, res, next) => {
     res.setHeader('Acces-Control-Allowed-Origin', '*')

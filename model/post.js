@@ -13,7 +13,7 @@ const postSchema = new schema({
     },
     image: {
         type: String,
-        // required: true
+        required: true
     },
     creator: {
         type: Object,
