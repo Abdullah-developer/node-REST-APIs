@@ -24,7 +24,6 @@ const fileFilter = (req, file, callback) => {
     }
 }
 
-
 app.use(bodyParser.json())
 app.use('/images', express.static(path.join(__dirname, 'images')))
 app.use(multer({storage: fileStorage, fileFilter: fileFilter}).single('image'))
@@ -37,14 +36,17 @@ app.use((req, res, next) => {
 })
 
 const feedRoutes = require('./routes/feed')
+const authRoutes = require('./routes/auth')
 
 app.use('/feed', feedRoutes)
+app.use('/auth', authRoutes)
 
 // middleware for handling the error
 app.use((error, req, res, next) => {
     const status = error.statusCode || 500;
+    const data = error.data;
     const message = error.message;
-    res.status(status).json({ message });
+    res.status(status).json({ message, data });
 })
 
 mongoose.connect('mongodb+srv://abdullah:07707908625@nodejs-cyldb.gcp.mongodb.net/Blog',

@@ -10,14 +10,14 @@ const clearImage = filePath => {
 }
 
 exports.getPosts = (req, res, next) => {
-    const currentPage = req.query.page || 1
-    const perPage = 2 
+    const currentPage = req.query.page || 1;
+    const perPage = 2;
     let totalCount;
     Post.find().countDocuments().then(document_count => {
-        totalCount = document_count;
+        totalCount =  `${2 * currentPage - 1} ${document_count < 2 * currentPage ? "" : 2 * currentPage} From ${document_count}`
         return Post.find().skip((currentPage - 1) * perPage).limit(perPage)
     }).then(posts => {
-            res.status(200).json({ posts, totalPost: `${2 * currentPage - 1} ${totalCount < 2 * currentPage ? "" : 2 * currentPage} From ${totalCount}`})
+            res.status(200).json({ posts, totalPost: totalCount})
         })
         .catch(error => {
             if (!error.statusCode) {
