@@ -16,7 +16,8 @@ const postSchema = new schema({
         required: true
     },
     creator: {
-        type: Object,
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User',
         required: true
     }
 }, {timestamps: true})
